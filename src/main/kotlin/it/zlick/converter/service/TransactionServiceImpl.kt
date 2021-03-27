@@ -1,7 +1,6 @@
 package it.zlick.converter.service
 
 import it.zlick.converter.model.Transaction
-import it.zlick.converter.service.external.ProcessResult
 import it.zlick.converter.service.external.TransactionProcessor
 import it.zlick.converter.service.external.TransactionProvider
 import org.apache.logging.log4j.LogManager
@@ -9,15 +8,15 @@ import org.springframework.stereotype.Service
 
 @Service
 class TransactionServiceImpl(
-  val provider: TransactionProvider,
-  val converter: TransactionConverter,
-  val processor: TransactionProcessor
+  private val provider: TransactionProvider,
+  private val converter: TransactionConverter,
+  private val processor: TransactionProcessor
   ): TransactionService {
 
-  override fun process(n: Int, targetCurrency: String): Summary {
+  override fun process(n: Int, chunkSize: Int, targetCurrency: String): Summary {
     val transactions = fetchTransactions(n)
     val converted = convertTransactions(transactions, targetCurrency)
-    val processed = processTransactions(converted)
+    val processed = processTransactions(converted, chunkSize)
 
     return Summary(
       expected = n,
@@ -30,8 +29,8 @@ class TransactionServiceImpl(
       ),
       processing = Result(
         expected = converted.size,
-        successful = processed.sumBy { it.passed },
-        failed = processed.sumBy { it.failed },
+        successful = processed.successful,
+        failed = processed.failed,
         failures = emptyList()
       )
     )
@@ -62,8 +61,8 @@ class TransactionServiceImpl(
     return conversionResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
   }
 
-  private fun processTransactions(transactions: List<Transaction>): List<ProcessResult> {
-    val processingResults = transactions.chunked(10).map {
+  private fun processTransactions(transactions: List<Transaction>, chunkSize: Int): ProcessResult {
+    val processingResults = transactions.chunked(chunkSize).map {
       runCatching {
         processor.process(it)
       }
@@ -71,8 +70,13 @@ class TransactionServiceImpl(
     processingResults.filter { it.isFailure }.forEach {
       LOG.error("Error while processing transactions ${it.exceptionOrNull()}")
     }
-    return processingResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
+    val total = transactions.size
+    val successful = processingResults.filter { it.isSuccess }.count() * chunkSize
+    val failed = processingResults.filter { it.isFailure }.count() * chunkSize
+    return ProcessResult(total=total, successful=successful, failed=failed)
   }
+
+  data class ProcessResult(val total: Int, val successful: Int, val failed: Int)
 
   companion object {
     private val LOG = LogManager.getLogger()

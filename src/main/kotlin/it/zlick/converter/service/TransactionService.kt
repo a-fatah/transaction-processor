@@ -4,7 +4,7 @@ import it.zlick.converter.model.Transaction
 
 
 interface TransactionService {
-  fun process(n: Int, targetCurrency: String): Summary
+  fun process(n: Int, chunkSize: Int, targetCurrency: String): Summary
 }
 
 data class Result(val expected: Int, val successful: Int, val failed: Int, val failures: List<Transaction>)

@@ -16,7 +16,7 @@ class ConverterApplication {
 
   @Bean
   fun clr(service: TransactionService) = CommandLineRunner {
-    val summary = service.process(10, "EUR");
+    val summary = service.process(10, 10, "EUR");
     LOG.info(summary)
   }
 

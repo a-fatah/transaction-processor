@@ -54,16 +54,6 @@ class TransactionProcessorTests {
   }
 
   @Test
-  fun `given some transactions could not be fetched then it returns number of failed fetches in summary`() {
-
-  }
-
-  @Test
-  fun `given some transacitons failed to convert then it returns number of failed conversions in summary`() {
-
-  }
-
-  @Test
   fun `given a transaction it calls process-transaction endpoint with POST method`() {
     // arrange
     val dummyResponse = ResponseEntity.ok(ProcessResult(success = true, passed = 0, failed = 0))
