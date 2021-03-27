@@ -11,6 +11,8 @@ import java.math.RoundingMode
 @Service
 class TransactionConverterImpl(val ratesProvider: ExchangeRatesProvider): TransactionConverter {
 
+  val calculator = FloatingPointCalculator()
+
   override fun convert(transaction: Transaction, targetCurrency: String): Transaction {
     val base = transaction.currency
     val date = transaction.createdAt.toLocalDate()
@@ -23,15 +25,9 @@ class TransactionConverterImpl(val ratesProvider: ExchangeRatesProvider): Transa
 
     LOG.debug("Conversion Rate for ${base}/${targetCurrency} found: ${exchangeRate}")
 
-    val amount = exchange(transaction.amount, exchangeRate)
+    val amount = calculator.convertAmount(transaction.amount, exchangeRate)
 
     return transaction.copy(amount = amount, currency = targetCurrency)
-  }
-
-  private fun exchange(amount: Float, rate: Float): Float {
-    val amount = BigDecimal.valueOf(amount.toDouble())
-    val rate = BigDecimal.valueOf(rate.toDouble())
-    return amount.multiply(rate).setScale(4, RoundingMode.HALF_DOWN).toFloat()
   }
 
   companion object {

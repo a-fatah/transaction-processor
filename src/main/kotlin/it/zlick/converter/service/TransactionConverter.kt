@@ -10,5 +10,6 @@ interface TransactionConverter {
    * @param target currency code for the target currency
    */
   fun convert(transaction: Transaction, target: String): Transaction
+
 }
 

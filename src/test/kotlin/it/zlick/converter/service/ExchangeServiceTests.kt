@@ -14,6 +14,8 @@ import java.time.format.DateTimeFormatter
 
 class ExchangeServiceTests {
 
+  val API_URL = "https://api.exchangeratesapi.io/{date}?base={base}"
+
   @Test
   fun `given base currency and date it calls api with correct parameters`() {
     // arrange
@@ -25,7 +27,7 @@ class ExchangeServiceTests {
         any())
     } returns ResponseEntity.ok(APIResponse(emptyMap()))
 
-    val exchangeService = GetExchangeRatesImpl(restTemplate);
+    val exchangeService = GetExchangeRatesImpl(API_URL, restTemplate);
     val baseCurrency = "USD"
     val date = LocalDate.now()
 
@@ -61,7 +63,7 @@ class ExchangeServiceTests {
         any())
     } returns ResponseEntity.ok(APIResponse(dummyRates))
 
-    val exchangeService = GetExchangeRatesImpl(restTemplate);
+    val exchangeService = GetExchangeRatesImpl(API_URL, restTemplate);
 
     // act
     val rates = exchangeService.getExchangeRates("USD", LocalDate.now());
