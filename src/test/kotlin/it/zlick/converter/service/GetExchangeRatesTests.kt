@@ -1,11 +1,13 @@
 package it.zlick.converter.service
 
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import it.zlick.converter.service.adapter.APIResponse
-import it.zlick.converter.service.adapter.GetExchangeRatesImpl
+import it.zlick.converter.service.adapter.ExchangeRatesProviderImpl
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
@@ -14,12 +16,18 @@ import java.time.format.DateTimeFormatter
 
 class GetExchangeRatesTests {
 
+  val restTemplate = mockk<RestTemplate>()
   val API_URL = "https://api.exchangeratesapi.io/{date}?base={base}"
+
+  @BeforeEach
+  fun init() {
+    clearMocks(restTemplate)
+  }
 
   @Test
   fun `given base currency and date it calls api with correct parameters`() {
     // arrange
-    val restTemplate = mockk<RestTemplate>()
+
     every {
       restTemplate.getForEntity(
         any(),
@@ -27,7 +35,7 @@ class GetExchangeRatesTests {
         any())
     } returns ResponseEntity.ok(APIResponse(emptyMap()))
 
-    val exchangeService = GetExchangeRatesImpl(API_URL, restTemplate);
+    val exchangeService = ExchangeRatesProviderImpl(API_URL, restTemplate);
     val baseCurrency = "USD"
     val date = LocalDate.now()
 
@@ -49,8 +57,6 @@ class GetExchangeRatesTests {
   @Test
   fun `given a currency and date when API request is successful then it returns map of exchange rates`() {
     // arrange
-    val restTemplate = mockk<RestTemplate>()
-
     val dummyRates = mapOf(
       "USD" to 1.23f,
       "EUR" to 1.50f
@@ -63,7 +69,7 @@ class GetExchangeRatesTests {
         any())
     } returns ResponseEntity.ok(APIResponse(dummyRates))
 
-    val exchangeService = GetExchangeRatesImpl(API_URL, restTemplate);
+    val exchangeService = ExchangeRatesProviderImpl(API_URL, restTemplate);
 
     // act
     val rates = exchangeService.getExchangeRates("USD", LocalDate.now());
