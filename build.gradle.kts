@@ -22,7 +22,10 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.javamoney:moneta:1.4.1")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-test") {
+    exclude(module = "mockito-core")
+  }
+  testImplementation("io.mockk:mockk:1.11.0")
 }
 
 tasks.withType<KotlinCompile> {
