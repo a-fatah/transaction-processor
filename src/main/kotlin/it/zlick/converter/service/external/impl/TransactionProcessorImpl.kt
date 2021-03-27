@@ -21,7 +21,7 @@ class TransactionProcessorImpl(
 
   override fun process(transactions: List<Transaction>): ProcessResult {
     if(transactions.isEmpty()) {
-      throw ProcessingError("Received empty list of transactions for processing! API won't be called")
+      throw ProcessingError("Received empty list of transactions for processing!")
     }
 
     if(transactions.size > MAX_CHUNK_SIZE) {
