@@ -15,6 +15,7 @@ class TransactionServiceImpl(
   override fun process(n: Int, targetCurrency: String): Summary {
     val transactions = (1..n).map { provider.getTransaction() }.filterNotNull()
 
+    // TODO cache exchange rates to avoid
     val converted = transactions.map {
       runCatching {
         converter.convert(it, targetCurrency)

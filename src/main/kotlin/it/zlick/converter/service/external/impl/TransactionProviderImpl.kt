@@ -1,5 +1,6 @@
 package it.zlick.converter.service.external.impl
 
+import it.zlick.converter.exception.FetchException
 import it.zlick.converter.model.Transaction
 import it.zlick.converter.service.external.TransactionProvider
 import org.apache.logging.log4j.LogManager
@@ -12,13 +13,12 @@ import org.springframework.web.client.RestTemplate
 class TransactionProviderImpl(@Value("\${api.transaction.url}") val apiUrl: String, val restTemplate: RestTemplate):
   TransactionProvider {
 
-  override fun getTransaction(): Transaction? {
+  override fun getTransaction(): Transaction {
     try {
       val response = restTemplate.getForEntity(apiUrl, Transaction::class.java)
-      return response.body
+      return response.body!!
     } catch(e: RestClientException) {
-      LOG.error("Error while calling transaction API: ${e.message}")
-      return null
+      throw FetchException("Error while fetching transaction: ${e.message}")
     }
   }
 
