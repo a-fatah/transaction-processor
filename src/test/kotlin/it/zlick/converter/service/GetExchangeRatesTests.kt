@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class ExchangeServiceTests {
+class GetExchangeRatesTests {
 
   val API_URL = "https://api.exchangeratesapi.io/{date}?base={base}"
 
