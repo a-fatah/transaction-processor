@@ -43,12 +43,9 @@ class TransactionServiceImpl(
         provider.getTransaction()
       }
     }
-
-    val failedFetches = fetchCalls.filter { it.isFailure }
-    failedFetches.forEach {
+    fetchCalls.filter { it.isFailure }.forEach {
       LOG.error(it.exceptionOrNull()?.message)
     }
-
     return fetchCalls.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
   }
 
@@ -59,8 +56,7 @@ class TransactionServiceImpl(
         converter.convert(it, targetCurrency)
       }
     }
-    val failedConversions = conversionResults.filter { it.isFailure }
-    failedConversions.forEach {
+    conversionResults.filter { it.isFailure }.forEach {
       LOG.error("${it.exceptionOrNull()?.message}")
     }
     return conversionResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
@@ -72,16 +68,11 @@ class TransactionServiceImpl(
         processor.process(it)
       }
     }
-
-    val failedProcesses = processingResults.filter { it.isFailure }
-
-    failedProcesses.forEach {
+    processingResults.filter { it.isFailure }.forEach {
       LOG.error("Error while processing transactions ${it.exceptionOrNull()}")
     }
-
     return processingResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
   }
-
 
   companion object {
     private val LOG = LogManager.getLogger()
