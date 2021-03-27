@@ -14,8 +14,9 @@ import org.springframework.web.client.RestTemplate
 import kotlin.random.Random
 
 class TransactionProcessorTests {
-  val restTemplate = mockk<RestTemplate>()
   val API_URL = "https://api.zlick.it/process-transactions"
+  val restTemplate = mockk<RestTemplate>()
+  val exchangeService = TransactionProcessorImpl(API_URL, restTemplate);
 
   @BeforeEach
   fun init() {
@@ -25,38 +26,46 @@ class TransactionProcessorTests {
   @Test
   fun `given empty list of transactions it throws an exception`() {
     // arrange
-
-    val exchangeService = TransactionProcessorImpl(API_URL, restTemplate);
     val transactions = emptyList<Transaction>()
 
+    // act
     val thrown = assertThrows<ProcessingError> {
       exchangeService.process(transactions)
     }
 
+    // assert
     assertThat(thrown.message).isEqualTo("Received empty list of transactions for processing!")
   }
 
   @Test
   fun `given a list of transactions having more than maximum allowed transactions then throws exception`() {
     // arrange
-    val restTemplate = mockk<RestTemplate>()
-
-    val exchangeService = TransactionProcessorImpl(API_URL, restTemplate);
     val transactions = List(20, {
       Transaction(currency = "USD", amount = Random.nextFloat() * 100, checksum = "test")
     })
 
+    // act
     val thrown = assertThrows<ProcessingError> {
       exchangeService.process(transactions)
     }
 
+    // assert
     assertThat(thrown.message).startsWith("# of transactions exceed MAX_CHUNK_SIZE")
+  }
+
+  @Test
+  fun `given some transactions could not be fetched then it returns number of failed fetches in summary`() {
+
+  }
+
+  @Test
+  fun `given some transacitons failed to convert then it returns number of failed conversions in summary`() {
+
   }
 
   @Test
   fun `given a transaction it calls process-transaction endpoint with POST method`() {
     // arrange
-    val restTemplate = mockk<RestTemplate>()
     val dummyResponse = ResponseEntity.ok(ProcessResult(success = true, passed = 0, failed = 0))
     val urlSlot = slot<String>()
     every {
@@ -66,8 +75,6 @@ class TransactionProcessorTests {
         ProcessResult::class.java
       )
     } returns dummyResponse
-
-    val exchangeService = TransactionProcessorImpl(API_URL, restTemplate);
 
     val transactions = listOf(Transaction(currency = "USD", amount = 10.0f, checksum = "test"))
 
