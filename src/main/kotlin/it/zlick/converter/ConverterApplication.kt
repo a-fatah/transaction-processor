@@ -23,7 +23,6 @@ class ConverterApplication {
     return restTemplate
   }
 
-  @Order(Ordered.LOWEST_PRECEDENCE)
   @Bean
   fun clr(service: TransactionService) = CommandLineRunner {
     val summary = service.process(n=1, chunkSize = 10, targetCurrency = "EUR");
@@ -36,5 +35,6 @@ class ConverterApplication {
 }
 
 fun main(args: Array<String>) {
-  runApplication<ConverterApplication>(*args)
+//  runApplication<ConverterApplication>(*args)
+
 }

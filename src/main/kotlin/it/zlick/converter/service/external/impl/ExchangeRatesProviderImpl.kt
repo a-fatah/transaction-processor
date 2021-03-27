@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter
 class ExchangeRatesProviderImpl(@Value("\${api.exchange.url}") val apiUrl: String, val restTemplate: RestTemplate):
   ExchangeRatesProvider {
 
+  @Cacheable("exchangeRates")
   override fun getExchangeRates(base: String, date: LocalDate): Map<String, Float> {
     val params = mapOf("date" to date.format(DateTimeFormatter.ISO_DATE), "base" to base)
     LOG.debug("Sending GET to ${apiUrl} with params ${params}...")

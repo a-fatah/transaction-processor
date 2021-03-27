@@ -1,5 +1,8 @@
 package it.zlick.converter.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.mockk.*
 import it.zlick.converter.exception.ProcessingError
 import it.zlick.converter.model.Transaction
@@ -40,9 +43,9 @@ class TransactionProcessorTests {
   @Test
   fun `given a list of transactions having more than maximum allowed transactions then throws exception`() {
     // arrange
-    val transactions = List(20, {
+    val transactions = List(20) {
       Transaction(currency = "USD", amount = Random.nextFloat() * 100, checksum = "test")
-    })
+    }
 
     // act
     val thrown = assertThrows<ProcessingError> {
@@ -81,5 +84,14 @@ class TransactionProcessorTests {
         ProcessResult::class.java
       )
     }
+  }
+
+
+  @Test
+  fun test() {
+    val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    val output = objectMapper.writeValueAsString(listOf(Transaction(currency = "USD", amount = 10.0f, checksum = "test")))
+    println(output)
   }
 }
