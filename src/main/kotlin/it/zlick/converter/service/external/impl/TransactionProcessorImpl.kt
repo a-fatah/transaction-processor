@@ -12,12 +12,12 @@ import org.springframework.web.client.RestTemplate
 
 @Service
 class TransactionProcessorImpl(
-  @Value("\${api.process.url}") val apiUrl: String,
-  val restTemplate: RestTemplate
+  @Value("\${api.process.url}") private val apiUrl: String,
+  private val restTemplate: RestTemplate
   ): TransactionProcessor {
 
   @Value("\${process.chunk-size}")
-  val MAX_CHUNK_SIZE = 10
+  private val MAX_CHUNK_SIZE = 10
 
   override fun process(transactions: List<Transaction>): ProcessResult {
     if(transactions.isEmpty()) {
