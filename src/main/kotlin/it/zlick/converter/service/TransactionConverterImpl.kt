@@ -5,6 +5,8 @@ import it.zlick.converter.model.Transaction
 import it.zlick.converter.service.external.ExchangeRatesProvider
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Service
 class TransactionConverterImpl(val ratesProvider: ExchangeRatesProvider): TransactionConverter {
@@ -21,7 +23,15 @@ class TransactionConverterImpl(val ratesProvider: ExchangeRatesProvider): Transa
 
     LOG.debug("Conversion Rate for ${base}/${targetCurrency} found: ${exchangeRate}")
 
-    return transaction.copy(amount = transaction.amount * exchangeRate, currency = targetCurrency)
+    val amount = exchange(transaction.amount, exchangeRate)
+
+    return transaction.copy(amount = amount, currency = targetCurrency)
+  }
+
+  private fun exchange(amount: Float, rate: Float): Float {
+    val amount = BigDecimal.valueOf(amount.toDouble())
+    val rate = BigDecimal.valueOf(rate.toDouble())
+    return amount.multiply(rate).setScale(4, RoundingMode.HALF_DOWN).toFloat()
   }
 
   companion object {
