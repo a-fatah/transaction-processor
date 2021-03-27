@@ -33,7 +33,7 @@ class TransactionServiceTests {
       every { checksum } returns "test"
     }
     // act
-    val result = transactionService.process(10, 10, "USD")
+    val result = transactionService.process(n = 10, chunkSize = 10, targetCurrency = "USD")
 
     // assert
     assertThat(result.retrieved).isEqualTo(10)
@@ -44,7 +44,7 @@ class TransactionServiceTests {
     // arrange
     every { provider.getTransaction() } throws FetchException("Could not fetch transaction")
     // act
-    val result = transactionService.process(10, 10, "USD")
+    val result = transactionService.process(n = 10, chunkSize = 10, targetCurrency = "USD")
     // assert
     assertThat(result.retrieved).isEqualTo(0)
   }
@@ -57,7 +57,7 @@ class TransactionServiceTests {
     }
     every { converter.convert(any(), any()) } throws ExchangeRateNotFound("Exchange rate not found")
     // act
-    val result = transactionService.process(10, 10, "USD")
+    val result = transactionService.process(n = 10, chunkSize = 10, targetCurrency = "USD")
 
     // assert
     assertThat(result.conversion.failed).isEqualTo(10)
@@ -74,7 +74,7 @@ class TransactionServiceTests {
     }
     every { processor.process(any()) } throws ProcessingError("Some error occured")
     // act
-    val result = transactionService.process(10, 5, "USD")
+    val result = transactionService.process(n = 10, chunkSize = 5, targetCurrency = "USD")
 
     // assert
     assertThat(result.processing.failed).isEqualTo(10)

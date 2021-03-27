@@ -20,21 +20,11 @@ import org.springframework.web.client.RestTemplate
 class ConverterApplication {
 
   @Bean
-  fun restTemplate(): RestTemplate {
+  fun restTemplate(objectMapper: ObjectMapper): RestTemplate {
     val restTemplate = RestTemplate(HttpComponentsClientHttpRequestFactory())
-    restTemplate.messageConverters.add(0, createMessageConverter())
+
+    restTemplate.messageConverters.add(0, MappingJackson2HttpMessageConverter(objectMapper))
     return restTemplate
-  }
-
-  private fun createMessageConverter(): MappingJackson2HttpMessageConverter {
-
-    val objectMapper = ObjectMapper().registerModule(JavaTimeModule()).registerModule(KotlinModule())
-    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-
-    val converter = MappingJackson2HttpMessageConverter()
-    converter.objectMapper = objectMapper
-    return converter
   }
 
   @Bean
@@ -42,6 +32,8 @@ class ConverterApplication {
   fun objectMapper(): ObjectMapper {
     val objectMapper = ObjectMapper().registerModule(JavaTimeModule()).registerModule(KotlinModule())
     objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
     return objectMapper
   }
 
