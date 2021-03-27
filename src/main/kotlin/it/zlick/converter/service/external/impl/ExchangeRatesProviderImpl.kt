@@ -11,7 +11,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
-class GetExchangeRatesImpl(@Value("\${api.exchange.url}") val apiUrl: String, val restTemplate: RestTemplate):
+class ExchangeRatesProviderImpl(@Value("\${api.exchange.url}") val apiUrl: String, val restTemplate: RestTemplate):
   ExchangeRatesProvider {
 
   override fun getExchangeRates(base: String, date: LocalDate): Map<String, Float> {
