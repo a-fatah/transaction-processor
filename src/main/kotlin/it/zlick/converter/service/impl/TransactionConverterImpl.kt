@@ -1,7 +1,9 @@
-package it.zlick.converter.service
+package it.zlick.converter.service.impl
 
 import it.zlick.converter.exception.ExchangeRateNotFound
 import it.zlick.converter.model.Transaction
+import it.zlick.converter.service.FloatingPointCalculator
+import it.zlick.converter.service.TransactionConverter
 import it.zlick.converter.service.external.ExchangeRatesProvider
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Service
@@ -22,9 +24,9 @@ class TransactionConverterImpl(val ratesProvider: ExchangeRatesProvider): Transa
 
     LOG.debug("Exchange Rate for ${base}/${targetCurrency} found: ${exchangeRate}")
 
-    val amount = calculator.convertAmount(transaction.amount, exchangeRate)
+    val converted = calculator.convertAmount(transaction.amount, exchangeRate)
 
-    return transaction.copy(amount = amount, currency = targetCurrency)
+    return transaction.copy(convertedAmount = converted, currency = targetCurrency)
   }
 
   companion object {

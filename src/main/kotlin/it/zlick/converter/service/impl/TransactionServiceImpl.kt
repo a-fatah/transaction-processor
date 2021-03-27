@@ -1,6 +1,10 @@
-package it.zlick.converter.service
+package it.zlick.converter.service.impl
 
 import it.zlick.converter.model.Transaction
+import it.zlick.converter.service.Result
+import it.zlick.converter.service.Summary
+import it.zlick.converter.service.TransactionConverter
+import it.zlick.converter.service.TransactionService
 import it.zlick.converter.service.external.TransactionProcessor
 import it.zlick.converter.service.external.TransactionProvider
 import org.apache.logging.log4j.LogManager
@@ -71,7 +75,7 @@ class TransactionServiceImpl(
       LOG.error("Error while processing transactions ${it.exceptionOrNull()}")
     }
     val total = transactions.size
-    val successful = processingResults.filter { it.isSuccess }.count() * chunkSize
+    val successful = processingResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull().sumBy { it.passed }
     val failed = processingResults.filter { it.isFailure }.count() * chunkSize
     return ProcessResult(total=total, successful=successful, failed=failed)
   }

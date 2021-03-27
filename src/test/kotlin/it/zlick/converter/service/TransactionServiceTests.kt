@@ -8,11 +8,10 @@ import it.zlick.converter.exception.FetchException
 import it.zlick.converter.exception.ProcessingError
 import it.zlick.converter.service.external.TransactionProcessor
 import it.zlick.converter.service.external.TransactionProvider
-import org.assertj.core.api.Assertions
+import it.zlick.converter.service.impl.TransactionServiceImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 
 class TransactionServiceTests {
 
