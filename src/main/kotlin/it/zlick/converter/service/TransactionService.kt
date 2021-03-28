@@ -8,4 +8,4 @@ interface TransactionService {
 }
 
 data class Result(val expected: Int, val successful: Int, val failed: Int, val failures: List<Transaction>)
-data class Summary(val expected: Int, val retrieved: Int, val conversion: Result, val processing: Result)
+data class Summary(val expected: Int, val fetched: Int, val conversion: Result, val processing: Result)

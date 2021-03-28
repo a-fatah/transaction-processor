@@ -25,7 +25,7 @@ class ConverterApplication {
 
   @Bean
   fun clr(service: TransactionService) = CommandLineRunner {
-    val summary = service.process(n=1, chunkSize = 10, targetCurrency = "EUR");
+    val summary = service.process(n=10, chunkSize = 10, targetCurrency = "EUR");
     LOG.info(summary)
   }
 
@@ -35,6 +35,6 @@ class ConverterApplication {
 }
 
 fun main(args: Array<String>) {
-//  runApplication<ConverterApplication>(*args)
+  runApplication<ConverterApplication>(*args)
 
 }

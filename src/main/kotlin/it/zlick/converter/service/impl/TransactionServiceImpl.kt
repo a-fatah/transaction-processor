@@ -9,6 +9,9 @@ import it.zlick.converter.service.external.TransactionProcessor
 import it.zlick.converter.service.external.TransactionProvider
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Service
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.allOf
+import java.util.concurrent.CompletableFuture.supplyAsync
 
 @Service
 class TransactionServiceImpl(
@@ -18,69 +21,90 @@ class TransactionServiceImpl(
   ): TransactionService {
 
   override fun process(n: Int, chunkSize: Int, targetCurrency: String): Summary {
-    val transactions = fetchTransactions(n)
-    val converted = convertTransactions(transactions, targetCurrency)
-    val processed = processTransactions(converted, chunkSize)
+    val fetchAsyncs = fetchTransactions(n)
+    val convertAsyncs = convertTransactions(fetchAsyncs, targetCurrency)
+
+    allOf(*convertAsyncs.toTypedArray()).thenApply {
+      convertAsyncs.map { it.join() }
+    }
+
+    val fetched = fetchAsyncs.map { it.get() }.filterNotNull()
+    val converted = convertAsyncs.map { it.get() }.filterNotNull()
+    val notConverted = fetched.filter { it.checksum !in converted.map { it.checksum } }
+
+    val processAsyncs = processTransactions(converted, chunkSize=10)
+
+    allOf(*processAsyncs.toTypedArray()).thenApply {
+      processAsyncs.map { it.join() }
+    }
+
+    val processingResults = processAsyncs.map { it.get() }
 
     return Summary(
       expected = n,
-      retrieved = transactions.size,
+      fetched = fetched.size,
       conversion = Result(
-        expected = transactions.size,
+        expected = fetched.size,
         successful = converted.size,
-        failed = transactions.size - converted.size,
-        failures = transactions.filter { it.checksum !in converted.map { it.checksum } }
+        failed = fetched.size - converted.size,
+        failures = notConverted
       ),
-      processing = Result(
-        expected = converted.size,
-        successful = processed.successful,
-        failed = processed.failed,
-        failures = emptyList()
-      )
+      processing = processingResults.reduce { acc, result ->
+        acc.copy(
+          expected = acc.expected + result.expected,
+          successful = acc.successful + result.successful,
+          failed = acc.failed + result.failed,
+          failures = acc.failures.plus(result.failures)
+        )
+      }
     )
   }
 
-  private fun fetchTransactions(n: Int): List<Transaction> {
-    val fetchCalls = (1..n).map {
-      runCatching {
-        provider.getTransaction()
+  private fun fetchTransactions(n: Int): List<CompletableFuture<Transaction?>> {
+    return (1..n).map {
+      supplyAsync {
+        runCatching {
+          provider.getTransaction()
+        }.recover {
+          LOG.error("Transaction could not be fetched: ${it.message}")
+          null
+        }.getOrNull()
       }
     }
-    fetchCalls.filter { it.isFailure }.forEach {
-      LOG.error(it.exceptionOrNull()?.message)
-    }
-    return fetchCalls.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
   }
 
-  private fun convertTransactions(transactions: List<Transaction>, targetCurrency: String): List<Transaction> {
-    // TODO cache exchange rates to avoid
-    val conversionResults = transactions.map {
-      runCatching {
-        converter.convert(it, targetCurrency)
+  private fun convertTransactions(transactions: List<CompletableFuture<Transaction?>>, targetCurrency: String): List<CompletableFuture<Transaction?>> {
+    return transactions.map {
+      if(it != null) {
+        it.thenCompose {
+          supplyAsync {
+            runCatching {
+              converter.convert(it!!, targetCurrency)
+            }.recover {
+              LOG.error("Transaction could not be converted: ${it.message}")
+              null
+            }.getOrNull()
+          }
+        }
+      } else {
+        CompletableFuture.completedFuture(null)
       }
     }
-    conversionResults.filter { it.isFailure }.forEach {
-      LOG.error("${it.exceptionOrNull()?.message}")
-    }
-    return conversionResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull()
   }
 
-  private fun processTransactions(transactions: List<Transaction>, chunkSize: Int): ProcessResult {
-    val processingResults = transactions.chunked(chunkSize).map {
-      runCatching {
-        processor.process(it)
+  private fun processTransactions(list: List<Transaction>, chunkSize: Int): List<CompletableFuture<Result>> {
+    return list.chunked(chunkSize) { chunk ->
+      supplyAsync {
+        runCatching {
+          val result = processor.process(chunk)
+          Result(expected = chunk.size, successful = chunk.size, failed = 0, failures = emptyList())
+        }.recover {
+          LOG.error("${it.message}")
+          Result(expected = chunk.size, successful = 0, failed = chunk.size, failures = chunk)
+        }.getOrNull()
       }
     }
-    processingResults.filter { it.isFailure }.forEach {
-      LOG.error("Error while processing transactions ${it.exceptionOrNull()}")
-    }
-    val total = transactions.size
-    val successful = processingResults.filter { it.isSuccess }.map { it.getOrNull() }.filterNotNull().sumBy { it.passed }
-    val failed = processingResults.filter { it.isFailure }.count() * chunkSize
-    return ProcessResult(total=total, successful=successful, failed=failed)
   }
-
-  data class ProcessResult(val total: Int, val successful: Int, val failed: Int)
 
   companion object {
     private val LOG = LogManager.getLogger()
