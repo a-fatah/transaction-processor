@@ -48,22 +48,22 @@ and the number of transactions processed should be controllable by a configurati
 
 ### 3. Solution
 
-The solution uses following technologies: 
+The solution uses following technologies to address the challenges discussed above: 
 
 - **Spring** for Dependency Injection for dependency injection 
 - **Kotlin Coroutines** for asynchronous operations
 - **Bucket4j** for rate limiting API calls
 
-
 #### 3.1 Design
 
 The system has been modelled using object oriented design techniques. Here is the list of major components of the system:
 
-- ExchangeRatesProvider
-- TransactionProvider 
-- TransactionConverter 
-- TransactionProcessor 
-- FlotingPointCalculator 
+- **ExchangeRatesProvider**
+- **TransactionProvider**
+- **TransactionConverter**
+- **TransactionProcessor**
+- **FlotingPointCalculator** 
+
 
 #### 3.3 How to run
 `./gradlew bootRun`
