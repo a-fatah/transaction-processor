@@ -29,7 +29,7 @@ class TransactionProcessorImpl(
     }
 
     try {
-      LOG.info("Sending ${transactions.size} transactions for processing...")
+      LOG.debug("Sending ${transactions.size} transactions for processing...")
       LOG.debug("POST ${apiUrl}")
       val res = restTemplate.postForEntity(apiUrl, transactions, ProcessResult::class.java)
       return res.body!!

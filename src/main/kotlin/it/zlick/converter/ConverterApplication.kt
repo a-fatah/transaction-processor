@@ -2,6 +2,7 @@ package it.zlick.converter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import it.zlick.converter.service.TransactionService
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
@@ -24,8 +25,9 @@ class ConverterApplication {
 
   @Bean
   fun clr(service: TransactionService, @Value("\${processor.target}") target: Int, @Value("\${processor.target.currency}") currency: String) = CommandLineRunner {
-    val summary = service.process(target, targetCurrency = currency);
-    LOG.info(summary)
+    runBlocking {
+      service.process(target, targetCurrency = currency);
+    }
   }
 
   companion object {
