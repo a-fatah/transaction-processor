@@ -8,6 +8,7 @@ import it.zlick.converter.service.TransactionService
 import it.zlick.converter.service.external.TransactionProcessor
 import it.zlick.converter.service.external.TransactionProvider
 import org.apache.logging.log4j.LogManager
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.allOf
@@ -20,7 +21,10 @@ class TransactionServiceImpl(
   private val processor: TransactionProcessor
   ): TransactionService {
 
-  override fun process(n: Int, chunkSize: Int, targetCurrency: String): Summary {
+  @Value("\${processor.chunk-size}")
+  private val chunkSize = 10
+
+  override fun process(n: Int, targetCurrency: String): Summary {
     val fetchAsyncs = fetchTransactions(n)
     val convertAsyncs = convertTransactions(fetchAsyncs, targetCurrency)
 
@@ -32,7 +36,7 @@ class TransactionServiceImpl(
     val converted = convertAsyncs.map { it.get() }.filterNotNull()
     val notConverted = fetched.filter { it.checksum !in converted.map { it.checksum } }
 
-    val processAsyncs = processTransactions(converted, chunkSize=10)
+    val processAsyncs = processTransactions(converted, chunkSize)
 
     allOf(*processAsyncs.toTypedArray()).thenApply {
       processAsyncs.map { it.join() }
