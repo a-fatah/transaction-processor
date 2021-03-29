@@ -62,7 +62,7 @@ The system has been modelled using object oriented design techniques. Here is th
 - **TransactionProvider**
 - **TransactionConverter**
 - **TransactionProcessor**
-- **FlotingPointCalculator** 
+- **CurrencyConverter** 
 
 
 #### 3.3 How to run

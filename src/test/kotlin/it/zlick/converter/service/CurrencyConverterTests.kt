@@ -7,13 +7,13 @@ import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
-class FloatingPointCalculatorTests {
+class CurrencyConverterTests {
 
   @ParameterizedTest
   @MethodSource("testInput")
-  fun `given a floating point number and exchange rate it returns a floating point with 4 decimal places`(input: Float, rate: Float, expected: Float) {
-    val converter = FloatingPointCalculator()
-    val result = converter.convertAmount(input, rate)
+  fun `given an amount and exchange rate it returns converted amount with 4 decimal places`(input: Float, rate: Float, expected: Float) {
+    val converter = CurrencyConverter()
+    val result = converter.convert(input, rate)
     assertThat(result).isEqualTo(expected)
   }
 

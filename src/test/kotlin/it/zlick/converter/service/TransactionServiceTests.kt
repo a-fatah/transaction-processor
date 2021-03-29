@@ -36,7 +36,7 @@ class TransactionServiceTests {
     val result = transactionService.process(n = 10, chunkSize = 10, targetCurrency = "USD")
 
     // assert
-    assertThat(result.retrieved).isEqualTo(10)
+    assertThat(result.fetched).isEqualTo(10)
   }
 
   @Test
@@ -46,7 +46,7 @@ class TransactionServiceTests {
     // act
     val result = transactionService.process(n = 10, chunkSize = 10, targetCurrency = "USD")
     // assert
-    assertThat(result.retrieved).isEqualTo(0)
+    assertThat(result.fetched).isEqualTo(0)
   }
 
   @Test
