@@ -75,8 +75,11 @@ All configuration parameters required to run the program are listed in `src/main
 Here is the list of parameters with their descriptions:
 
 - `api.exchange.url` - URL for the exchange rate provider API
-- `api.process.url` - URL where converted transactions are POSTed
-- `api.transaction.url` - URL for API which needs to be called for fetching transactions
-- `processor.chunk-size` - an integer which determines the size of chunk of transactions processed simultaenously.
+- `api.process.url` - URL for transaction process endpoint
+- `api.transaction.url` - URL for transaction provider API
+- `processor.chunk-size` - specifies number of transactions sent to process endpoint in a single request
 - `processor.target` - sets number of transactions to be processed
-- `processor.target.currency` - specify target currency for transactions to be converted
+- `processor.target-currency` - specifies target currency for transactions to be converted
+- `processor.concurrent.fetch` - specifies number of concurrent requests sent to transaction provider API
+- `processor.concurrent.convert` -specifies number of concurrent requests sent to exchange rate API
+- `processor.concurrent.process` - specifies number of concurrent POST requests to be sent to process endpoint
