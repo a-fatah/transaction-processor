@@ -23,8 +23,8 @@ class ConverterApplication {
   }
 
   @Bean
-  fun clr(service: TransactionService, @Value("\${processor.target}") target: Int) = CommandLineRunner {
-    val summary = service.process(target, targetCurrency = "EUR");
+  fun clr(service: TransactionService, @Value("\${processor.target}") target: Int, @Value("\${processor.target.currency}") currency: String) = CommandLineRunner {
+    val summary = service.process(target, targetCurrency = currency);
     LOG.info(summary)
   }
 

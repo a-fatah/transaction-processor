@@ -79,3 +79,4 @@ Here is the list of parameters with their descriptions:
 - `api.transaction.url` - URL for API which needs to be called for fetching transactions
 - `processor.chunk-size` - an integer which determines the size of chunk of transactions processed simultaenously.
 - `processor.target` - sets number of transactions to be processed
+- `processor.target.currency` - specify target currency for transactions to be converted
