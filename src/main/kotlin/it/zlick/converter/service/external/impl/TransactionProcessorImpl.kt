@@ -16,7 +16,7 @@ class TransactionProcessorImpl(
   private val restTemplate: RestTemplate
   ): TransactionProcessor {
 
-  @Value("\${process.chunk-size}")
+  @Value("\${processor.chunk-size}")
   private val MAX_CHUNK_SIZE = 10
 
   override fun process(transactions: List<Transaction>): ProcessResult {

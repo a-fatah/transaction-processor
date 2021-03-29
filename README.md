@@ -77,4 +77,4 @@ Here is the list of parameters with their descriptions:
 - `api.exchange.url` - URL for the exchange rate provider API
 - `api.process.url` - URL where converted transactions are POSTed
 - `api.transaction.url` - URL for API which needs to be called for fetching transactions
-- `process.chunk-size` - an integer which determines the size of chunk of transactions processed simultaenously.
+- `processor.chunk-size` - an integer which determines the size of chunk of transactions processed simultaenously.
