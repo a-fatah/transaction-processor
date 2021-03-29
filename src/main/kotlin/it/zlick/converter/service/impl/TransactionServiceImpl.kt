@@ -1,5 +1,6 @@
 package it.zlick.converter.service.impl
 
+import it.zlick.converter.Config
 import it.zlick.converter.model.Transaction
 import it.zlick.converter.service.TransactionConverter
 import it.zlick.converter.service.TransactionService
@@ -12,27 +13,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.LogManager
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class TransactionServiceImpl(
   private val provider: TransactionProvider,
   private val converter: TransactionConverter,
-  private val processor: TransactionProcessor
+  private val processor: TransactionProcessor,
+  private val config: Config,
 ) : TransactionService {
 
-  @Value("\${processor.chunk-size}")
-  private val chunkSize = 10
-
-  @Value("\${processor.concurrent.fetch}")
-  private val fetchThreads = 5
-
-  @Value("\${processor.concurrent.convert}")
-  private val convertThreads = 5
-
-  @Value("\${processor.concurrent.process}")
-  private val processThreads = 5
+  val chunkSize = config.chunkSize
+  val fetchConcurrent = config.concurrent.fetch
+  val convertConcurrent = config.concurrent.convert
+  val processConcurrent = config.concurrent.process
 
   override fun process(n: Int, targetCurrency: String) = runBlocking {
     var fetched = 0
@@ -45,9 +39,9 @@ class TransactionServiceImpl(
 
     val chunks = n / chunkSize
 
-    val fetchers = newFixedThreadPoolContext(fetchThreads, "fetcher")
-    val converters = newFixedThreadPoolContext(convertThreads, "converter")
-    val processors = newFixedThreadPoolContext(processThreads, "processor")
+    val fetchers = newFixedThreadPoolContext(fetchConcurrent, "fetcher")
+    val converters = newFixedThreadPoolContext(convertConcurrent, "converter")
+    val processors = newFixedThreadPoolContext(processConcurrent, "processor")
 
     val process = Channel<List<Transaction>>()
 

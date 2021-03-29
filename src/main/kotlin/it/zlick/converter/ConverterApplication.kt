@@ -7,12 +7,14 @@ import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.client.RestTemplate
 
+@EnableConfigurationProperties(Config::class)
 @SpringBootApplication
 class ConverterApplication {
 
@@ -24,9 +26,9 @@ class ConverterApplication {
   }
 
   @Bean
-  fun clr(service: TransactionService, @Value("\${processor.target}") target: Int, @Value("\${processor.target.currency}") currency: String) = CommandLineRunner {
+  fun clr(service: TransactionService, config: Config) = CommandLineRunner {
     runBlocking {
-      service.process(target, targetCurrency = currency);
+      service.process(config.transactions, config.targetCurrency);
     }
   }
 
